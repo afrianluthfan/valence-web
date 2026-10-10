@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Monochrome: emphasis by weight, size and inversion, never hue. */
+:root {
+  --paper: #F3F4F4;
+  --ink: #101214;
+  --ink-2: #383C40;
+  --mute: #63686D;
+  --rule: #D4D7D9;
+  --rule-strong: #ADB2B6;
+  --panel: #E8EAEB;
+  --solid: #101214;
+  --on-solid: #F3F4F4;
+  --on-solid-mute: #ADB2B6;
+  --solid-rule: #383C40;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0C0D0E; --ink: #E9EAEA; --ink-2: #BCC0C3; --mute: #8A8F94;
+    --rule: #26292C; --rule-strong: #43474B; --panel: #16181A;
+    --solid: #1A1C1F; --on-solid: #E9EAEA; --on-solid-mute: #8A8F94; --solid-rule: #34383C;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-mute: var(--mute);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-panel: var(--panel);
+  --color-solid: var(--solid);
+  --color-on-solid: var(--on-solid);
+  --color-on-solid-mute: var(--on-solid-mute);
+  --color-solid-rule: var(--solid-rule);
+
+  --font-serif: var(--font-newsreader), "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: var(--font-plex-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono);
+}
+
+@theme {
+  /* max-sm / max-md / max-lg match the template's 560 / 760 / 960px breakpoints */
+  --breakpoint-sm: 561px;
+  --breakpoint-md: 761px;
+  --breakpoint-lg: 961px;
+
+  --animate-flow: flow 3.6s linear infinite;
+  @keyframes flow {
+    to { stroke-dashoffset: 0; }
+  }
+}
+
+@layer base {
+  a { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  h1, h2, h3 { font-weight: 400; text-wrap: balance; }
+}
