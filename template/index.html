@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Valence is a low-frequency trading system for Bitcoin perpetual futures. Claude makes the call; deterministic code watches the market and carries it out.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Valence">
+<meta property="og:description" content="Valence is a low-frequency trading system for Bitcoin perpetual futures. Claude makes the call; deterministic code watches the market and carries it out.">
+<meta property="og:url" content="https://valence.web.id/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23101214'/%3E%3Cg fill='none' stroke='%23F3F4F4' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M7 7 L16 25 L25 7'/%3E%3Cpath d='M16 12 V25'/%3E%3C/g%3E%3Cg fill='%23F3F4F4'%3E%3Ccircle cx='7' cy='7' r='2.2'/%3E%3Ccircle cx='25' cy='7' r='2.2'/%3E%3Ccircle cx='16' cy='12' r='2.2'/%3E%3C/g%3E%3C/svg%3E">
+<title>Valence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 1120px column. Hero splits thesis | signal diagram; each section opens with a ruled head; contact closes on an inverted panel. Monochrome: emphasis by weight, size and inversion, never hue. */
+:root {
+  --paper: #F3F4F4;
+  --ink: #101214;
+  --ink-2: #383C40;
+  --mute: #63686D;
+  --rule: #D4D7D9;
+  --rule-strong: #ADB2B6;
+  --panel: #E8EAEB;
+  --solid: #101214;
+  --on-solid: #F3F4F4;
+  --on-solid-mute: #ADB2B6;
+  --solid-rule: #383C40;
+  --serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --measure: 62ch;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0C0D0E; --ink: #E9EAEA; --ink-2: #BCC0C3; --mute: #8A8F94;
+    --rule: #26292C; --rule-strong: #43474B; --panel: #16181A;
+    --solid: #1A1C1F; --on-solid: #E9EAEA; --on-solid-mute: #8A8F94; --solid-rule: #34383C; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0C0D0E; --ink: #E9EAEA; --ink-2: #BCC0C3; --mute: #8A8F94;
+  --rule: #26292C; --rule-strong: #43474B; --panel: #16181A;
+  --solid: #1A1C1F; --on-solid: #E9EAEA; --on-solid-mute: #8A8F94; --solid-rule: #34383C; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-optical-sizing: auto;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  padding-inline: clamp(16px, 4vw, 40px);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+
+.label {
+  font-family: var(--sans); font-size: 0.75rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute);
+}
+.sub {
+  font-family: var(--sans); font-size: 1.0625rem; line-height: 1.55;
+  color: var(--ink-2); max-width: 56ch;
+}
+
+/* ---------- Top bar ---------- */
+.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding-block: 22px; flex-wrap: wrap;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+  font-family: var(--serif); font-size: 1.375rem; letter-spacing: 0.01em;
+}
+.brand svg { width: 26px; height: 26px; }
+.nav { display: flex; gap: clamp(14px, 2.4vw, 28px); flex-wrap: wrap; }
+.nav a {
+  font-family: var(--sans); font-size: 0.8125rem; letter-spacing: 0.06em;
+  text-decoration: none; color: var(--ink-2);
+}
+.nav a:hover { color: var(--ink); text-decoration: underline; }
+
+/* ---------- Hero ---------- */
+.hero {
+  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 72px); align-items: center;
+  padding-block: clamp(40px, 7vw, 96px) clamp(56px, 8vw, 112px);
+}
+.hero-text { display: grid; gap: 28px; min-width: 0; }
+.hero h1 {
+  font-size: clamp(2.6rem, 6.2vw, 5.1rem); line-height: 1.02;
+  letter-spacing: -0.022em; font-weight: 350;
+}
+.hero h1 em { font-style: italic; font-weight: 300; }
+.hero .sub { font-size: clamp(1.0625rem, 1.5vw, 1.1875rem); }
+.status {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px; margin: 4px 0 0; padding-top: 18px; border-top: 1px solid var(--rule);
+}
+.status div { min-width: 0; }
+.status dt { font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+.status dd { margin: 4px 0 0; font-family: var(--sans); font-size: 0.9375rem; color: var(--ink); }
+
+.bond { margin: 0; min-width: 0; display: grid; gap: 18px; }
+.bond svg { width: 100%; height: auto; display: block; overflow: visible; }
+.bond .sig { font-family: var(--mono); font-size: 12.5px; fill: var(--ink-2); dominant-baseline: middle; }
+.bond .wire { fill: none; stroke: var(--rule-strong); stroke-width: 1; }
+.bond .pulse { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round;
+  stroke-dasharray: 3 97; stroke-dashoffset: 100; animation: flow 3.6s linear infinite; }
+.bond .tip { fill: var(--ink-2); }
+.bond .ring { fill: var(--paper); stroke: var(--ink); stroke-width: 1.4; }
+.bond .core { fill: var(--ink); }
+.bond .out { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+.bond .tag { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; fill: var(--ink); font-weight: 600; }
+@keyframes flow { to { stroke-dashoffset: 0; } }
+.bond figcaption {
+  font-family: var(--sans); font-size: 0.875rem; line-height: 1.55; color: var(--mute);
+  border-left: 1px solid var(--rule-strong); padding-left: 14px; max-width: 46ch;
+}
+.bond figcaption b { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1rem; color: var(--ink); }
+
+/* ---------- Sections ---------- */
+.section { border-top: 1px solid var(--ink); padding-block: clamp(56px, 8vw, 112px); }
+.sec-head {
+  display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  gap: 16px 40px; margin-bottom: clamp(40px, 6vw, 72px);
+}
+.sec-head .label { padding-top: 0.9rem; }
+.sec-head .body { display: grid; gap: 18px; min-width: 0; }
+.sec-head h2 { font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.06; letter-spacing: -0.016em; max-width: 24ch; }
+
+.block { margin-top: clamp(56px, 8vw, 96px); }
+.block-head { display: grid; gap: 10px; margin-bottom: 28px; max-width: 60ch; }
+.block-head h3 { font-size: clamp(1.5rem, 2.6vw, 2rem); line-height: 1.15; letter-spacing: -0.01em; }
+
+/* Three reasons */
+.thirds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(28px, 4vw, 48px); }
+.thirds article { display: grid; gap: 12px; align-content: start; min-width: 0; border-top: 1px solid var(--rule); padding-top: 20px; }
+.thirds h3 { font-size: 1.375rem; line-height: 1.25; }
+.thirds p { color: var(--ink-2); }
+
+/* Decision loop */
+.loop { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); }
+.loop li { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 22px 22px 26px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.loop .step { display: flex; align-items: baseline; gap: 12px; }
+.loop .n { font-family: var(--mono); font-size: 0.75rem; color: var(--mute); font-variant-numeric: tabular-nums; }
+.loop h4 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 1.25rem; }
+.loop p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; }
+.loop .machine { font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); margin-left: auto; }
+.loop .machine.ai { color: var(--ink); }
+
+.board {
+  margin: 28px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+  gap: clamp(20px, 4vw, 48px); align-items: start;
+}
+.board-card { background: var(--panel); border: 1px solid var(--rule); min-width: 0; overflow-x: auto; }
+.board-top { display: flex; justify-content: space-between; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--rule); font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+.board-top b { color: var(--ink); font-weight: 600; }
+.board dl { margin: 0; padding: 14px 18px 18px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 7px 22px; font-family: var(--mono); font-size: 0.875rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.board dt { color: var(--mute); text-transform: uppercase; font-size: 0.75rem; padding-top: 0.12em; letter-spacing: 0.04em; }
+.board dd { margin: 0; color: var(--ink); min-width: 0; }
+.board dd small { color: var(--mute); font-size: 0.8125rem; }
+.board dd .op { color: var(--mute); }
+.board figcaption { font-family: var(--sans); font-size: 0.9375rem; line-height: 1.55; color: var(--ink-2); display: grid; gap: 10px; }
+.board figcaption .label { color: var(--mute); }
+
+/* House rules */
+.rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(28px, 5vw, 64px); }
+.rules li { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); gap: 8px; padding-block: 15px; border-bottom: 1px solid var(--rule); min-width: 0; }
+.rules li::before { content: ""; width: 9px; height: 9px; margin-top: 0.55em; border: 1.4px solid var(--ink); transform: rotate(45deg); }
+
+/* Claude across the company */
+.uses { margin: 0; display: grid; }
+.uses div { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 8px 40px; padding-block: 20px; border-top: 1px solid var(--rule); }
+.uses div:last-child { border-bottom: 1px solid var(--rule); }
+.uses dt { font-family: var(--sans); font-weight: 500; font-size: 0.9375rem; letter-spacing: 0.02em; }
+.uses dd { margin: 0; color: var(--ink-2); max-width: var(--measure); }
+
+/* Proof figures */
+.figures { margin-top: clamp(48px, 7vw, 80px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; border-top: 1px solid var(--ink); padding-top: 22px; }
+.figures .head { grid-column: 1 / -1; }
+.figures div { display: grid; gap: 4px; min-width: 0; }
+.figures .num { font-family: var(--serif); font-weight: 300; font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums lining-nums; }
+.figures .what { font-family: var(--sans); font-size: 0.875rem; color: var(--ink-2); }
+
+/* ---------- Founders ---------- */
+.people { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(28px, 4vw, 44px); }
+.person { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.portrait {
+  aspect-ratio: 4 / 5; max-width: 100%; background: var(--solid); color: var(--on-solid);
+  display: grid; place-items: end start; padding: 18px; position: relative; overflow: hidden;
+}
+.portrait span { font-family: var(--serif); font-weight: 300; font-size: clamp(3.4rem, 7vw, 5.4rem); line-height: 0.9; letter-spacing: -0.03em; }
+.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); }
+.person h3 { font-size: 1.5rem; line-height: 1.2; }
+.person .role { font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+.person p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; }
+.person .li { font-family: var(--sans); font-size: 0.875rem; color: var(--ink); justify-self: start; }
+
+/* ---------- Timeline ---------- */
+.tl { list-style: none; margin: 0; padding: 0; position: relative; }
+.tl::before { content: ""; position: absolute; top: 8px; bottom: 8px; left: calc(9.5rem + 20px); width: 1px; background: var(--rule-strong); }
+.tl li { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 40px; padding-bottom: 34px; position: relative; }
+.tl li:last-child { padding-bottom: 0; }
+.tl li::before {
+  content: ""; position: absolute; left: calc(9.5rem + 20px - 5px); top: 0.62em;
+  width: 11px; height: 11px; background: var(--paper); border: 1.4px solid var(--ink); border-radius: 50%;
+}
+.tl li.done::before { background: var(--ink); }
+.tl li.next::before { border-style: dashed; }
+.tl time { font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.04em; color: var(--ink-2); padding-top: 0.32em; text-align: right; font-variant-numeric: tabular-nums; }
+.tl .entry { display: grid; gap: 6px; min-width: 0; max-width: var(--measure); }
+.tl h3 { font-size: 1.3125rem; line-height: 1.3; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tl p { color: var(--ink-2); }
+.tl .now { font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; background: var(--solid); color: var(--on-solid); padding: 2px 8px 3px; }
+.funding { margin-top: 44px; padding: 18px 22px; border: 1px solid var(--rule-strong); display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.funding p { font-family: var(--sans); color: var(--ink-2); font-size: 0.9375rem; }
+
+/* ---------- Contact ---------- */
+.contact { background: var(--solid); color: var(--on-solid); padding: clamp(32px, 6vw, 72px); display: grid; gap: 28px; }
+.contact .label { color: var(--on-solid-mute); }
+.contact h2 { font-size: clamp(2rem, 4vw, 3.25rem); line-height: 1.06; letter-spacing: -0.016em; }
+.email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.email { font-family: var(--serif); font-size: clamp(1.4rem, 3.6vw, 2.5rem); font-weight: 400; overflow-wrap: anywhere; color: var(--on-solid); }
+.copy {
+  font-family: var(--sans); font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase;
+  background: transparent; color: var(--on-solid); border: 1px solid var(--on-solid); padding: 9px 16px; cursor: pointer;
+}
+.copy:hover { background: var(--on-solid); color: var(--solid); }
+.copy:focus-visible { outline-color: var(--on-solid); }
+.copy-status { font-family: var(--sans); font-size: 0.875rem; color: var(--on-solid-mute); min-height: 1.4em; }
+.facts { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding-top: 22px; border-top: 1px solid var(--solid-rule); }
+.facts dt { font-family: var(--sans); font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-solid-mute); }
+.facts dd { margin: 4px 0 0; font-family: var(--sans); font-size: 0.9375rem; }
+
+/* ---------- Footer ---------- */
+.foot { padding-block: 36px 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 20px 48px; }
+.foot .brand { font-size: 1.125rem; }
+.foot p { font-family: var(--sans); font-size: 0.8125rem; line-height: 1.6; color: var(--mute); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .bond { max-width: 600px; }
+  .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .sec-head { grid-template-columns: minmax(0, 1fr); }
+  .sec-head .label { padding-top: 0; }
+  .thirds, .rules { grid-template-columns: minmax(0, 1fr); }
+  .uses div { grid-template-columns: minmax(0, 1fr); }
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+  .foot { grid-template-columns: minmax(0, 1fr); }
+  .tl::before { left: 5px; }
+  .tl li { grid-template-columns: minmax(0, 1fr); gap: 4px; padding-left: 30px; }
+  .tl li::before { left: 0; top: 0.3em; }
+  .tl time { text-align: left; padding-top: 0; }
+}
+@media (max-width: 560px) {
+  .loop { grid-template-columns: minmax(0, 1fr); }
+  .people { grid-template-columns: minmax(0, 1fr); }
+  .portrait { aspect-ratio: 16 / 10; }
+  .status, .facts { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .nav { gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .bond .pulse { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#top" aria-label="Valence, back to top">
+      <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M5 5 L16 27 L27 5"/><path d="M16 11 V27"/>
+        <circle cx="5" cy="5" r="2.4" fill="currentColor" stroke="none"/>
+        <circle cx="27" cy="5" r="2.4" fill="currentColor" stroke="none"/>
+        <circle cx="16" cy="11" r="2.4" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Valence</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#approach">Approach</a>
+      <a href="#founders">Founders</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="hero-text">
+      <p class="label">Systematic trading &middot; BTC perpetual futures &middot; Indonesia</p>
+      <h1 id="hero-title">Claude makes the call. <em>Code carries it out.</em></h1>
+      <p class="sub">Valence is a low-frequency trading system for Bitcoin perpetual futures. Code watches the market around the clock. When a setup forms, Claude reads the whole picture and writes the trade plan, and code then holds that plan exactly as written.</p>
+      <dl class="status">
+        <div><dt>Built on</dt><dd>Claude, by Anthropic</dd></div>
+        <div><dt>Market</dt><dd>BTCUSDT perpetual, Binance</dd></div>
+        <div><dt>Stage</dt><dd>Testing on Binance testnet</dd></div>
+      </dl>
+    </div>
+
+    <figure class="bond">
+      <svg viewBox="0 0 452 332" role="img" aria-labelledby="bond-t bond-d">
+        <title id="bond-t">Nine market signals combining into one decision</title>
+        <desc id="bond-d">Market structure, CVD divergence, open interest change, volume delta, funding and basis, the liquidation map, order-book walls, top-trader positions and volatility all feed one node, Claude, which outputs a single trade plan.</desc>
+        <g>
+          <text class="sig" x="158" y="30" text-anchor="end">Market structure</text>
+          <text class="sig" x="158" y="64" text-anchor="end">CVD divergence</text>
+          <text class="sig" x="158" y="98" text-anchor="end">Open interest &#916;</text>
+          <text class="sig" x="158" y="132" text-anchor="end">Volume delta</text>
+          <text class="sig" x="158" y="166" text-anchor="end">Funding &amp; basis</text>
+          <text class="sig" x="158" y="200" text-anchor="end">Liquidation map</text>
+          <text class="sig" x="158" y="234" text-anchor="end">Order-book walls</text>
+          <text class="sig" x="158" y="268" text-anchor="end">Top-trader positions</text>
+          <text class="sig" x="158" y="302" text-anchor="end">Volatility &middot; ATR</text>
+        </g>
+        <g>
+          <path class="wire" d="M170 30 C252 30 262 166 318 166"/>
+          <path class="wire" d="M170 64 C252 64 262 166 318 166"/>
+          <path class="wire" d="M170 98 C252 98 262 166 318 166"/>
+          <path class="wire" d="M170 132 C252 132 262 166 318 166"/>
+          <path class="wire" d="M170 166 C252 166 262 166 318 166"/>
+          <path class="wire" d="M170 200 C252 200 262 166 318 166"/>
+          <path class="wire" d="M170 234 C252 234 262 166 318 166"/>
+          <path class="wire" d="M170 268 C252 268 262 166 318 166"/>
+          <path class="wire" d="M170 302 C252 302 262 166 318 166"/>
+        </g>
+        <g>
+          <path class="pulse" pathLength="100" style="animation-delay:0s" d="M170 30 C252 30 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-2.2s;animation-duration:4.1s" d="M170 64 C252 64 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-0.9s;animation-duration:3.2s" d="M170 98 C252 98 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-3.1s" d="M170 132 C252 132 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-1.6s;animation-duration:4.4s" d="M170 166 C252 166 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-2.7s;animation-duration:3.4s" d="M170 200 C252 200 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-0.4s;animation-duration:3.9s" d="M170 234 C252 234 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-1.9s" d="M170 268 C252 268 262 166 318 166"/>
+          <path class="pulse" pathLength="100" style="animation-delay:-3.4s;animation-duration:4.2s" d="M170 302 C252 302 262 166 318 166"/>
+        </g>
+        <g>
+          <circle class="tip" cx="168" cy="30" r="2.2"/><circle class="tip" cx="168" cy="64" r="2.2"/><circle class="tip" cx="168" cy="98" r="2.2"/>
+          <circle class="tip" cx="168" cy="132" r="2.2"/><circle class="tip" cx="168" cy="166" r="2.2"/><circle class="tip" cx="168" cy="200" r="2.2"/>
+          <circle class="tip" cx="168" cy="234" r="2.2"/><circle class="tip" cx="168" cy="268" r="2.2"/><circle class="tip" cx="168" cy="302" r="2.2"/>
+        </g>
+        <circle class="ring" cx="330" cy="166" r="12"/>
+        <circle class="core" cx="330" cy="166" r="5"/>
+        <text class="tag" x="330" y="197" text-anchor="middle">CLAUDE</text>
+        <path class="out" d="M344 166 H440"/>
+        <path class="out" d="M434 160 L441 166 L434 172"/>
+        <text class="tag" x="441" y="150" text-anchor="end">PLAN</text>
+      </svg>
+      <figcaption><b>Valence</b>, in chemistry, is an atom&rsquo;s combining power: how many bonds it can form. Our engine combines many market signals into one decision.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ===================== APPROACH ===================== -->
+  <section class="section" id="approach" aria-labelledby="approach-title">
+    <div class="sec-head">
+      <p class="label">Approach</p>
+      <div class="body">
+        <h2 id="approach-title">A language model as the analyst. A machine as the trader.</h2>
+        <p class="sub">Why we put Claude at the center of a quantitative system, and how the model and the code divide the work.</p>
+      </div>
+    </div>
+
+    <div class="thirds">
+      <article>
+        <h3>Why a language model</h3>
+        <p>A good trade rests on evidence that arrives in many forms at once: price structure, resting orders, liquidation clusters, funding, and how the largest traders are positioned. Fixed rules handle the numbers and miss the context. A person reads the context but tires, hesitates and drifts from the plan. Claude reads all of it on every decision, applies the same rulebook each time, and writes down its reasoning.</p>
+      </article>
+      <article>
+        <h3>The quantitative base</h3>
+        <p>Everything Claude sees is computed first, in tested code. We collect data from Binance, Bybit, OKX and Bitget and compute more than twenty indicators in-house, including ATR, cumulative volume delta and its divergences, open-interest delta, market structure, funding and basis. The key indicators update live as each candle forms and are checked against TradingView.</p>
+      </article>
+      <article>
+        <h3>Why low frequency suits Claude</h3>
+        <p>We trade a small number of high-conviction setups, and a setup can take hours or days to fill. At that pace a few seconds of model thinking costs nothing, so every decision gets the strongest Claude model and the full picture. The work that needs speed, watching price every second and sending orders, stays in code.</p>
+      </article>
+    </div>
+
+    <div class="block">
+      <div class="block-head">
+        <p class="label">The decision loop</p>
+        <h3>How one market event becomes a trade</h3>
+      </div>
+      <ol class="loop">
+        <li>
+          <div class="step"><span class="n">01</span><h4>Watch</h4><span class="machine">Code</span></div>
+          <p>Fifteen detectors scan the data around the clock. Claude stays idle until one of them finds something worth a look: a break in market structure, a divergence forming, a new 4-hour or daily candle, or price reaching a mapped level.</p>
+        </li>
+        <li>
+          <div class="step"><span class="n">02</span><h4>Read</h4><span class="machine ai">Claude</span></div>
+          <p>Claude pulls the history and live readings it needs through tools, and reads screenshots of the chart, the liquidation heatmap and the order book.</p>
+        </li>
+        <li>
+          <div class="step"><span class="n">03</span><h4>Plan</h4><span class="machine ai">Claude</span></div>
+          <p>It writes a board. Each setup gets an entry band, a stop, targets, its odds of reaching the first target, and the exact conditions under which it may fire.</p>
+        </li>
+        <li>
+          <div class="step"><span class="n">04</span><h4>Hold</h4><span class="machine">Code</span></div>
+          <p>A watcher checks those conditions every second, with no model in the loop. When an entry condition is met inside the band, fixed code sizes the position and places the order.</p>
+        </li>
+        <li>
+          <div class="step"><span class="n">05</span><h4>Manage</h4><span class="machine">Both</span></div>
+          <p>In a trade, Claude sets warning and exit conditions. A warning wakes it to reassess. An exit condition closes the trade without waiting for the model.</p>
+        </li>
+        <li>
+          <div class="step"><span class="n">06</span><h4>Review</h4><span class="machine ai">Claude</span></div>
+          <p>When the trade closes, Claude writes the journal entry and the desk returns to idle, ready for the next setup.</p>
+        </li>
+      </ol>
+
+      <figure class="board">
+        <div class="board-card">
+          <div class="board-top"><b>Board &middot; Setup A</b><span>Illustrative</span></div>
+          <dl>
+            <dt>Side</dt><dd>Long</dd>
+            <dt>Entry band</dt><dd>61,200 &ndash; 61,500</dd>
+            <dt>Stop</dt><dd>60,780 <small>below the 61,000 bid wall</small></dd>
+            <dt>Target 1</dt><dd>63,750 <small>3.1R from the worst fill</small></dd>
+            <dt>Odds</dt><dd>34% <small>to reach T1 before the stop</small></dd>
+            <dt>Fires when</dt><dd>15m sweeps below 61,200<br><span class="op">then</span> 15m closes back inside the band<br><span class="op">and</span> the 61,000 bid wall is still resting</dd>
+            <dt>Disarm if</dt><dd>4h closes below 60,780</dd>
+          </dl>
+        </div>
+        <figcaption>
+          <span class="label">What Claude hands to the machine</span>
+          <span>Each row on a board is a complete, checkable plan. Claude writes it once, in advance. From then on the watcher decides only whether its conditions are true, so every trade can be traced back to reasoning written before any money moved.</span>
+          <span>This row is an example made up for this page. It is not a live position or a signal.</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="block">
+      <div class="block-head">
+        <p class="label">House rules</p>
+        <h3>Limits that hold whatever the model concludes</h3>
+      </div>
+      <ul class="rules">
+        <li>One position at a time, on one account.</li>
+        <li>Isolated margin, with a 20x leverage ceiling.</li>
+        <li>A setup cannot be armed without a stop on the correct side of its entry.</li>
+        <li>An entry that fires outside its band is refused. We do not chase.</li>
+        <li>Position size comes from fixed, reviewed code. The model&rsquo;s only input to it is its odds.</li>
+        <li>The protective close never waits for the model, and trading keys carry no withdrawal rights.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-head">
+        <p class="label">Claude across the company</p>
+        <h3>From the first design session to the trade journal</h3>
+        <p class="sub">Claude has been part of every stage of the work since the beginning, from research to production.</p>
+      </div>
+      <dl class="uses">
+        <div><dt>Research</dt><dd>The trading method was refined on the Anantaka desk with Claude as the analyst, and the architecture was worked out in long design sessions with Claude.</dd></div>
+        <div><dt>Engineering</dt><dd>The system is built with Claude Code. Features start as written design specs, and the repository carries its own working instructions for Claude.</dd></div>
+        <div><dt>Decisions</dt><dd>In production Claude is the analyst. It runs through the Claude Agent SDK with tools, chart reading, and one continuous conversation for each trade.</dd></div>
+        <div><dt>Review</dt><dd>We audit the system with Claude. The September review checked 22 findings against the code and set the order of fixes.</dd></div>
+        <div><dt>Learning</dt><dd>Claude writes a journal entry for every trade, and the desk reviews what worked and what did not before the next one.</dd></div>
+      </dl>
+    </div>
+
+    <div class="figures" aria-label="The work so far">
+      <p class="label head">Built since May 2026</p>
+      <div><span class="num">40,000</span><span class="what">lines of Python, approximately</span></div>
+      <div><span class="num">1,500+</span><span class="what">automated tests</span></div>
+      <div><span class="num">39</span><span class="what">written design specs</span></div>
+      <div><span class="num">4</span><span class="what">exchanges in the data feed</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== FOUNDERS ===================== -->
+  <section class="section" id="founders" aria-labelledby="founders-title">
+    <div class="sec-head">
+      <p class="label">Founders</p>
+      <div class="body">
+        <h2 id="founders-title">A trader and two engineers</h2>
+        <p class="sub">Valence was founded in 2026 by three principals. It is a Halven Group company.</p>
+      </div>
+    </div>
+    <div class="people">
+      <article class="person">
+        <!-- To use a photo: add <img src="futuh.jpg" alt=""> inside .portrait. It is shown in grayscale automatically. -->
+        <div class="portrait" aria-hidden="true"><span>FA</span></div>
+        <p class="role">Founder &middot; Quant &amp; Product</p>
+        <h3>Futuh Nurmuntaha Alfahmi</h3>
+        <p>Designed the trading method and the rules Valence runs on, and sets its risk limits. Has traded crypto markets since 2020, and is managing partner of Anantaka, a sister trading desk in Halven Group.</p>
+        <a class="li" href="https://www.linkedin.com/in/futuh-nurmuntaha-alfahmi-4841201a3/" target="_blank" rel="noopener">LinkedIn &#8599;</a>
+      </article>
+      <article class="person">
+        <div class="portrait" aria-hidden="true"><span>RK</span></div>
+        <p class="role">Principal &middot; Lead Programmer</p>
+        <h3>Ramadhan Agung Karyuto</h3>
+        <p>Builds the data engine: the collectors for four exchanges, the indicator calculators, the live pipelines and the order path.</p>
+        <a class="li" href="https://www.linkedin.com/in/rakaryuto/" target="_blank" rel="noopener">LinkedIn &#8599;</a>
+      </article>
+      <article class="person">
+        <div class="portrait" aria-hidden="true"><span>AL</span></div>
+        <p class="role">Principal &middot; DevOps &amp; AI Engineer</p>
+        <h3>Afrian Luthfan</h3>
+        <p>Runs the infrastructure and the Claude analyst: the servers, the browser scrapers, and the prompts, tools and guardrails the model works within.</p>
+        <a class="li" href="https://www.linkedin.com/in/afrian-luthfan/" target="_blank" rel="noopener">LinkedIn &#8599;</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <section class="section" id="timeline" aria-labelledby="timeline-title">
+    <div class="sec-head">
+      <p class="label">Timeline</p>
+      <div class="body">
+        <h2 id="timeline-title">From a trading desk to a trading machine</h2>
+        <p class="sub">Years of trading came first. The machine has been in engineering since May 2026.</p>
+      </div>
+    </div>
+    <ol class="tl">
+      <li class="done">
+        <time datetime="2020">2020</time>
+        <div class="entry"><h3>Futuh starts trading crypto markets</h3><p>The trading experience that Valence is built on begins.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2024-07">Jul 2024</time>
+        <div class="entry"><h3>Anantaka starts trading</h3><p>Anantaka, a sister desk in Halven Group, trades BTC perpetual futures with a written, rule-based framework. Claude later becomes the desk&rsquo;s analyst.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-04">Apr 2026</time>
+        <div class="entry"><h3>Work begins on automating the desk</h3><p>We compare three frontier AI models on the same desk data and start specifying the system.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-05-05">5 May 2026</time>
+        <div class="entry"><h3>Engineering starts</h3><p>The three founders split the work across quant and product, data engineering, and AI engineering. The database schema and the first indicator pipelines ship.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-06-27">27 Jun 2026</time>
+        <div class="entry"><h3>We choose Claude</h3><p>Claude reasoned the most systematically of the models we tested, so we dropped the multi-model design and built on Claude alone. The trade lifecycle is fixed: idle, setup, in trade, review.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-07">Jul 2026</time>
+        <div class="entry"><h3>The data engine is complete</h3><p>Indicators from four exchanges are checked bar by bar against TradingView. The automation is designed around the Claude Agent SDK.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-08-11">11 Aug 2026</time>
+        <div class="entry"><h3>The system becomes Valence</h3><p>Claude now writes the conditions for each trade in a form the machine can check, and a watcher holds them every second.</p></div>
+      </li>
+      <li class="done">
+        <time datetime="2026-09">Sep 2026</time>
+        <div class="entry"><h3>Orders run on testnet</h3><p>Execution runs through a simulator and Binance testnet. On 30 September a full system review checks 22 findings against the code, with 1,591 tests passing.</p></div>
+      </li>
+      <li>
+        <time datetime="2026-10">Oct 2026</time>
+        <div class="entry"><h3>Entry and risk, rebuilt <span class="now">Now</span></h3><p>Entries and stops are redesigned around liquidity sweeps, and the review&rsquo;s fixes land one by one.</p></div>
+      </li>
+      <li class="next">
+        <time>Next</time>
+        <div class="entry"><h3>Live trading</h3><p>Valence goes live once the pre-live checklist from the review is cleared.</p></div>
+      </li>
+    </ol>
+    <div class="funding">
+      <p class="label">Funding</p>
+      <p>Bootstrapped. Valence is funded by its three founders.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT ===================== -->
+  <section class="section" id="contact" aria-labelledby="contact-title">
+    <div class="contact">
+      <p class="label">Contact</p>
+      <h2 id="contact-title">Write to the founders</h2>
+      <div class="email-row">
+        <a class="email" id="email" href="mailto:founders@valence.web.id">founders@valence.web.id</a>
+        <button class="copy" id="copy-email" type="button">Copy address</button>
+      </div>
+      <p class="copy-status" id="copy-status" aria-live="polite"></p>
+      <dl class="facts">
+        <div><dt>Based in</dt><dd>Indonesia</dd></div>
+        <div><dt>Group</dt><dd>Halven Group</dd></div>
+        <div><dt>Stage</dt><dd>Testnet, live rollout next</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <a class="brand" href="#top" aria-label="Valence, back to top">
+      <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M5 5 L16 27 L27 5"/><path d="M16 11 V27"/>
+        <circle cx="5" cy="5" r="2.4" fill="currentColor" stroke="none"/>
+        <circle cx="27" cy="5" r="2.4" fill="currentColor" stroke="none"/>
+        <circle cx="16" cy="11" r="2.4" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Valence</span>
+    </a>
+    <div>
+      <p>&copy; 2026 Valence. A Halven Group company.</p>
+      <p>Nothing on this site is investment advice, a solicitation, or an offer of any financial product or service.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copy-email');
+  var out = document.getElementById('copy-status');
+  var link = document.getElementById('email');
+  var address = 'founders@valence.web.id';
+  function selectAddress() {
+    try {
+      var range = document.createRange();
+      range.selectNodeContents(link);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (e) {}
+  }
+  btn.addEventListener('click', function () {
+    var done = function () { out.textContent = 'Copied to your clipboard.'; };
+    var fallback = function () { selectAddress(); out.textContent = 'Address selected. Press Ctrl+C or ⌘C to copy.'; };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(address).then(done, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
